@@ -1,9 +1,0 @@
-# 编辑器配置文件
-.vscode
-.qoder
-.idea
-.trae
-.curso
-
-# npm 包锁定文件
-package-lock.json
