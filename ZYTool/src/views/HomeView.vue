@@ -34,9 +34,9 @@
                                             <a-space direction="vertical" align="center" style="width:100%">
                                                 <div class="tool-icon">{{ tool.icon }}</div>
                                                 <a-typography-title :level="4" style="margin:0">{{ tool.name
-                                                }}</a-typography-title>
+                                                    }}</a-typography-title>
                                                 <a-typography-paragraph style="margin:0">{{ tool.description
-                                                    }}</a-typography-paragraph>
+                                                }}</a-typography-paragraph>
                                                 <a-tag v-if="tool.type === 'frontend'" color="cyan">前端处理</a-tag>
                                                 <a-tag v-else-if="tool.type === 'backend'" color="orange">后端处理</a-tag>
                                             </a-space>
@@ -93,7 +93,8 @@ const loadCategories = async () => {
                 tools: [
                     { id: 4, name: '文本对比', icon: '≈', description: '对比两个文本的差异', type: 'backend' },
                     { id: 9, name: '正则测试', icon: '.*', description: '测试正则表达式', type: 'backend' },
-                    { id: 12, name: '密码生成器', icon: '🔐', description: '生成安全密码', type: 'backend' }
+                    { id: 12, name: '密码生成器', icon: '🔐', description: '生成安全密码', type: 'backend' },
+                    { id: 13, name: '地图导航', icon: '🗺', description: '显示当前位置地图', type: 'backend' },
                 ]
             },
             {

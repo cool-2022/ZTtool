@@ -4,7 +4,7 @@ import json
 import base64
 import urllib.parse
 
-from backend.schemas import TextProcessRequest, TextCompareRequest
+from schemas import TextProcessRequest, TextCompareRequest
 
 
 router = APIRouter(prefix="/api/text", tags=["text"])

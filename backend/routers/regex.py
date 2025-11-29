@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 import re
 
-from backend.schemas import RegexTestRequest
+from schemas import RegexTestRequest
 
 
 router = APIRouter(prefix="/api/regex", tags=["regex"])

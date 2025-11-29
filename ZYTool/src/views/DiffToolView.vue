@@ -4,29 +4,24 @@
             <!-- 页面标题 -->
             <div class="page-header">
                 <a-typography-title :level="2">文本比对工具</a-typography-title>
-                <a-typography-paragraph>支持文件和文件夹比对，快速发现差异</a-typography-paragraph>
+                <a-typography-paragraph>支持文本文件比对，快速发现差异</a-typography-paragraph>
             </div>
 
             <!-- 上传区域 -->
             <a-row :gutter="24">
                 <a-col :xs="24" :lg="12">
-                    <a-card title="A 侧文件/文件夹" :bordered="false">
+                    <a-card title="A 侧文件" :bordered="false">
                         <a-space direction="vertical" style="width: 100%" :size="16">
                             <a-upload-dragger v-model:fileList="fileListA" :before-upload="beforeUploadA"
-                                :customRequest="() => { }" @change="handleChangeA" :multiple="true"
-                                :directory="uploadModeA === 'folder'">
+                                :customRequest="() => { }" @change="handleChangeA" :multiple="false">
                                 <p class="ant-upload-drag-icon">
                                     <inbox-outlined></inbox-outlined>
                                 </p>
                                 <p class="ant-upload-text">点击或拖拽文件到此区域</p>
                                 <p class="ant-upload-hint">
-                                    支持单个或批量上传，也可以上传整个文件夹
+                                    仅支持单个文本文件上传
                                 </p>
                             </a-upload-dragger>
-
-                            <!-- <a-radio-group v-model:value="uploadModeA" button-style="solid">
-                                <a-radio-button value="file">上传文件/文件夹</a-radio-button>
-                            </a-radio-group> -->
 
                             <a-button @click="clearA" block>清空</a-button>
                         </a-space>
@@ -34,23 +29,18 @@
                 </a-col>
 
                 <a-col :xs="24" :lg="12">
-                    <a-card title="B 侧文件/文件夹" :bordered="false">
+                    <a-card title="B 侧文件" :bordered="false">
                         <a-space direction="vertical" style="width: 100%" :size="16">
                             <a-upload-dragger v-model:fileList="fileListB" :before-upload="beforeUploadB"
-                                :customRequest="() => { }" @change="handleChangeB" :multiple="true"
-                                :directory="uploadModeB === 'folder'">
+                                :customRequest="() => { }" @change="handleChangeB" :multiple="false">
                                 <p class="ant-upload-drag-icon">
                                     <inbox-outlined></inbox-outlined>
                                 </p>
                                 <p class="ant-upload-text">点击或拖拽文件到此区域</p>
                                 <p class="ant-upload-hint">
-                                    支持单个或批量上传，也可以上传整个文件夹
+                                    仅支持单个文本文件上传
                                 </p>
                             </a-upload-dragger>
-
-                            <!-- <a-radio-group v-model:value="uploadModeB" button-style="solid">
-                                <a-radio-button value="file">上传文件/文件夹</a-radio-button>
-                            </a-radio-group> -->
 
                             <a-button @click="clearB" block>清空</a-button>
                         </a-space>
@@ -67,28 +57,8 @@
 
             <!-- 比对结果 -->
             <a-card v-if="diffResult" title="比对结果" :bordered="false" style="margin-top: 24px;">
-                <!-- 文件夹比对结果 -->
-                <div v-if="compareMode === 'folder' && diffResult && 'totalFiles' in diffResult">
-                    <a-alert :message="`共有 ${diffResult.totalFiles} 个文件，其中 ${diffResult.differentFiles.length} 个文件有差异`"
-                        type="info" show-icon style="margin-bottom: 16px" />
-
-                    <a-list v-if="diffResult.differentFiles.length > 0" :data-source="diffResult.differentFiles"
-                        bordered>
-                        <template #renderItem="{ item }">
-                            <a-list-item>
-                                <a-space>
-                                    <file-text-outlined style="color: var(--primary-color);" />
-                                    <span>{{ item }}</span>
-                                </a-space>
-                            </a-list-item>
-                        </template>
-                    </a-list>
-
-                    <a-empty v-else description="所有文件内容相同" />
-                </div>
-
                 <!-- 文件比对结果 -->
-                <div v-else-if="compareMode === 'file' && diffResult && 'onlyInA' in diffResult">
+                <div v-if="compareMode === 'file' && diffResult && 'onlyInA' in diffResult">
                     <a-row :gutter="24">
                         <!-- A文件差异 -->
                         <a-col :xs="24" :lg="12">
@@ -126,16 +96,13 @@
             <a-card :bordered="false">
                 <a-descriptions :column="1">
                     <a-descriptions-item label="文件比对">
-                        选择"上传文件"模式，分别上传两个文件进行逐行比对，显示各自独有的行
-                    </a-descriptions-item>
-                    <a-descriptions-item label="文件夹比对">
-                        选择"上传文件夹"模式，上传两个文件夹，显示内容不同的文件列表
+                        分别上传两个文本文件进行逐行比对，显示各自独有的行
                     </a-descriptions-item>
                     <a-descriptions-item label="支持格式">
                         支持所有文本文件格式（.txt, .js, .vue, .json, .md 等）
                     </a-descriptions-item>
                     <a-descriptions-item label="注意事项">
-                        文件夹比对仅比较文件名相同的文件，不会递归子文件夹
+                        每次只能上传一个文件，不支持批量上传和文件夹上传
                     </a-descriptions-item>
                 </a-descriptions>
             </a-card>
@@ -149,29 +116,30 @@ import { message } from 'ant-design-vue'
 import { InboxOutlined, FileTextOutlined } from '@ant-design/icons-vue'
 import type { UploadProps } from 'ant-design-vue'
 import type { DiffLine, FileDiffResult, FolderDiffResult, DiffResult } from '../services/api'
+import { ApiService } from '../services/api'
 
 const fileListA = ref<any[]>([])
 const fileListB = ref<any[]>([])
-const uploadModeA = ref<'file' | 'folder'>('file')
-const uploadModeB = ref<'file' | 'folder'>('file')
 const comparing = ref(false)
 const diffResult = ref<DiffResult | null>(null)
-const compareMode = ref<'file' | 'folder'>('file')
+const compareMode = ref<'file'>('file')
 
 const filesA = ref<Map<string, File>>(new Map())
 const filesB = ref<Map<string, File>>(new Map())
 
 // A侧上传前处理
 const beforeUploadA: UploadProps['beforeUpload'] = (file) => {
-    const fileName = file.webkitRelativePath || file.name
-    filesA.value.set(fileName, file)
+    // 只允许单个文件
+    filesA.value.clear()
+    filesA.value.set(file.name, file)
     return false
 }
 
 // B侧上传前处理
 const beforeUploadB: UploadProps['beforeUpload'] = (file) => {
-    const fileName = file.webkitRelativePath || file.name
-    filesB.value.set(fileName, file)
+    // 只允许单个文件
+    filesB.value.clear()
+    filesB.value.set(file.name, file)
     return false
 }
 
@@ -211,81 +179,25 @@ const readFileContent = (file: File): Promise<string> => {
     })
 }
 
-// 比对两个文件内容
+// 比对两个文件内容（调用后端接口）
 const compareFileContent = async (fileA: File, fileB: File): Promise<FileDiffResult> => {
+    // 读取文件内容
     const contentA = await readFileContent(fileA)
     const contentB = await readFileContent(fileB)
 
-    const linesA = contentA.split('\n')
-    const linesB = contentB.split('\n')
+    // 调用后端接口进行比对
+    const result = await ApiService.compareFiles({
+        text1: contentA,
+        text2: contentB
+    })
 
-    const onlyInA: DiffLine[] = []
-    const onlyInB: DiffLine[] = []
-
-    // 使用简单的逐行比对算法
-    const maxLines = Math.max(linesA.length, linesB.length)
-
-    for (let i = 0; i < maxLines; i++) {
-        const lineA = linesA[i]
-        const lineB = linesB[i]
-
-        if (lineA !== undefined && lineB !== undefined) {
-            if (lineA !== lineB) {
-                // 行内容不同
-                if (!linesB.includes(lineA)) {
-                    onlyInA.push({ lineNumber: i + 1, content: lineA })
-                }
-                if (!linesA.includes(lineB)) {
-                    onlyInB.push({ lineNumber: i + 1, content: lineB })
-                }
-            }
-        } else if (lineA !== undefined) {
-            // 只存在于A
-            onlyInA.push({ lineNumber: i + 1, content: lineA })
-        } else if (lineB !== undefined) {
-            // 只存在于B
-            onlyInB.push({ lineNumber: i + 1, content: lineB })
-        }
-    }
-
-    return { onlyInA, onlyInB }
-}
-
-// 比对文件夹
-const compareFolders = async (): Promise<FolderDiffResult> => {
-    const differentFiles: string[] = []
-    const filesAMap = filesA.value
-    const filesBMap = filesB.value
-
-    // 找出共同的文件名
-    const commonFiles = Array.from(filesAMap.keys()).filter(name => filesBMap.has(name))
-
-    for (const fileName of commonFiles) {
-        const fileA = filesAMap.get(fileName)!
-        const fileB = filesBMap.get(fileName)!
-
-        try {
-            const contentA = await readFileContent(fileA)
-            const contentB = await readFileContent(fileB)
-
-            if (contentA !== contentB) {
-                differentFiles.push(fileName)
-            }
-        } catch (error) {
-            console.error(`比对文件 ${fileName} 失败:`, error)
-        }
-    }
-
-    return {
-        totalFiles: commonFiles.length,
-        differentFiles
-    }
+    return result
 }
 
 // 开始比对
 const compareFiles = async () => {
     if (filesA.value.size === 0 || filesB.value.size === 0) {
-        message.warning('请先上传两侧的文件或文件夹')
+        message.warning('请先上传两侧的文件')
         return
     }
 
@@ -293,61 +205,19 @@ const compareFiles = async () => {
     diffResult.value = null
 
     try {
-        if (uploadModeA.value !== uploadModeB.value) {
-            message.error('文件比对需要两侧选择相同的类型上传')
+        // 文件比对
+        compareMode.value = 'file'
+        const fileA = Array.from(filesA.value.values())[0]
+        const fileB = Array.from(filesB.value.values())[0]
+
+        if (!fileA || !fileB) {
+            message.error('请确保两侧都上传了文件')
             return
         }
 
-        // 判断比对模式
-        if (uploadModeA.value === 'folder' || uploadModeB.value === 'folder') {
-            // 文件夹比对
-            message.error('文件夹比对需要两侧都选择"上传文件夹"模式')
-            return
-            compareMode.value = 'folder'
-            diffResult.value = await compareFolders()
-            message.success('文件夹比对完成')
-        } else {
-
-
-            /**************************************************/
-            // 创建时间: 2025/11/10 22:50:50   未开发完成
-            // 创建人:  cool™️
-            // 功能说明:  
-            // 功能描述:  
-            // 2025-11-10 zzy 文件比对 优先处理，这里先上传txt文件作为测试。 
-            /**************************************************/
-
-            // 文件比对
-            if (filesA.value.size > 1 || filesB.value.size > 1) {
-                message.warning('文件比对模式只支持单个文件，请分别上传一个文件')
-                return
-            }
-
-            compareMode.value = 'file'
-            const fileA = Array.from(filesA.value.values())[0]
-            const fileB = Array.from(filesB.value.values())[0]
-
-            console.log('fileA:', fileA)
-            console.log('fileB:', fileB)
-
-            if (!fileA || !fileB) {
-                message.error('请确保两侧都上传了文件')
-                return
-            }
-
-            const fileName = fileA.name.toLowerCase()
-
-            // 获取小数点后面的内容（文件扩展名）
-            const fileExtension = fileName.includes('.')
-                ? fileName.substring(fileName.lastIndexOf('.') + 1)
-                : ''
-
-            console.log('fileName:', fileName)
-            console.log('fileExtension:', fileExtension)
-
-            //diffResult.value = await compareFileContent(fileA, fileB)
-            message.success('文件比对完成')
-        }
+        // 调用后端接口进行比对
+        diffResult.value = await compareFileContent(fileA, fileB)
+        message.success('文件比对完成')
     } catch (error) {
         message.error('比对失败: ' + (error as Error).message)
         console.error(error)

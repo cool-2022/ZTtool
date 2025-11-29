@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 import secrets
 import string
 
-from backend.schemas import PasswordGenerateRequest
+from schemas import PasswordGenerateRequest
 
 
 router = APIRouter(prefix="/api/password", tags=["password"])

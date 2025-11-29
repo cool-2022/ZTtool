@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from datetime import datetime
 
-from backend.schemas import TimestampConvertRequest
+from schemas import TimestampConvertRequest
 
 
 router = APIRouter(prefix="/api/timestamp", tags=["timestamp"])

@@ -1,11 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend.routers.text import router as text_router
-from backend.routers.regex import router as regex_router
-from backend.routers.password import router as password_router
-from backend.routers.timestamp import router as timestamp_router
-from backend.routers.misc import router as misc_router
+from routers.text import router as text_router
+from routers.regex import router as regex_router
+from routers.password import router as password_router
+from routers.timestamp import router as timestamp_router
+from routers.misc import router as misc_router
+from routers.diff import router as diff_router
 
 
 app = FastAPI(title="ZYTool API", version="1.0.0")
@@ -25,6 +26,7 @@ app.include_router(regex_router)
 app.include_router(password_router)
 app.include_router(timestamp_router)
 app.include_router(misc_router)
+app.include_router(diff_router)
 
 
 if __name__ == "__main__":

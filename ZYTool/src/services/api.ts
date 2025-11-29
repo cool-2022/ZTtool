@@ -2,7 +2,7 @@ import axios from 'axios'
 
 // 创建axios实例
 const api = axios.create({
-    baseURL: 'http://localhost:8000/api',
+    baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api',
     timeout: 10000,
     headers: {
         'Content-Type': 'application/json',
@@ -12,11 +12,11 @@ const api = axios.create({
 // 请求拦截器
 api.interceptors.request.use(
     (config) => {
-        console.log('发送请求:', config.method?.toUpperCase(), config.url)
+        if (import.meta.env.DEV) console.log('发送请求:', config.method?.toUpperCase(), config.url)
         return config
     },
     (error) => {
-        console.error('请求错误:', error)
+        if (import.meta.env.DEV) console.error('请求错误:', error)
         return Promise.reject(error)
     }
 )
@@ -24,11 +24,11 @@ api.interceptors.request.use(
 // 响应拦截器
 api.interceptors.response.use(
     (response) => {
-        console.log('收到响应:', response.status, response.data)
+        if (import.meta.env.DEV) console.log('收到响应:', response.status, response.data)
         return response
     },
     (error) => {
-        console.error('响应错误:', error.response?.status, error.response?.data)
+        if (import.meta.env.DEV) console.error('响应错误:', error.response?.status, error.response?.data)
         return Promise.reject(error)
     }
 )
@@ -99,8 +99,13 @@ export type DiffResult = FileDiffResult | FolderDiffResult
 export class ApiService {
     // 获取工具分类
     static async getCategories(): Promise<{ categories: Category[] }> {
+        // const response = await api.get('/categories')
         const response = await api.get('/categories')
-        return response.data
+        // const response = await fetch('http://localhost:8000/api/categories')
+        // if (!response.ok) {
+        //     throw new Error(`HTTP error! status: ${response.status}`)
+        // }
+        return await response.data
     }
 
     // 文本处理
@@ -164,6 +169,12 @@ export class ApiService {
         action: string
     }> {
         const response = await api.post('/timestamp/convert', request)
+        return response.data
+    }
+
+    // 文件比对
+    static async compareFiles(request: TextCompareRequest): Promise<FileDiffResult> {
+        const response = await api.post('/diff/compare', request)
         return response.data
     }
 
